@@ -110,11 +110,6 @@ class Control extends Application\UI\Control
 	private $templateFile = NULL;
 
 	/**
-	 * @var Storage\StorageFactory
-	 */
-	private $storageFactory;
-
-	/**
 	 * @var Storage\IStorage
 	 */
 	private $storage;
@@ -152,6 +147,18 @@ class Control extends Application\UI\Control
 
 		if ($templateFile) {
 			$this->setTemplateFile($templateFile);
+		}
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function attached($presenter)
+	{
+		parent::attached($presenter);
+
+		foreach ($this->getComponents(FALSE, Forms\Form::class) as $form) {
+			$this->attachButtonsCallbacks($form);
 		}
 	}
 
@@ -217,8 +224,6 @@ class Control extends Application\UI\Control
 		if ($form->getElementPrototype()->getAttribute('enctype') !== NULL) {
 			throw new Exceptions\InvalidArgumentException('StepForm cannot handle forms with file upload!');
 		}
-
-		$this->attachButtonsCallbacks($form);
 
 		$counter = $this->getTotalSteps() + 1;
 

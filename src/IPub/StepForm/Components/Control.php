@@ -155,15 +155,19 @@ class Control extends Application\UI\Control
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * @return void
 	 */
-	public function attached($presenter)
+	public function enableFillWithDefault()
 	{
-		parent::attached($presenter);
+		$this->fillWithDefaults = TRUE;
+	}
 
-		foreach ($this->getComponents(FALSE, Forms\Form::class) as $form) {
-			$this->attachButtonsCallbacks($form);
-		}
+	/**
+	 * @return void
+	 */
+	public function disableFillWithDefault()
+	{
+		$this->fillWithDefaults = FALSE;
 	}
 
 	/**
@@ -274,12 +278,14 @@ class Control extends Application\UI\Control
 			}
 
 			$this->addComponent($form, 'step_' . $step);
-		}
 
-		$form->onValidate[] = [$this, 'triggerValidate'];
-		$form->onSubmit[] = [$this, 'triggerSubmit'];
-		$form->onSuccess[] = [$this, 'triggerSuccess'];
-		$form->onError[] = [$this, 'triggerError'];
+			$form->onValidate[] = [$this, 'triggerValidate'];
+			$form->onSubmit[] = [$this, 'triggerSubmit'];
+			$form->onSuccess[] = [$this, 'triggerSuccess'];
+			$form->onError[] = [$this, 'triggerError'];
+
+			$this->attachButtonsCallbacks($form);
+		}
 
 		$formData = $this->storage->get($this->getSessionKey($step));
 

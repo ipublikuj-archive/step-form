@@ -6,7 +6,7 @@
  * @license        http://www.ipublikuj.eu
  * @author         Adam Kadlec http://www.ipublikuj.eu
  * @package        iPublikuj:StepForm!
- * @subpackage     Components
+ * @subpackage     Storage
  * @since          1.0.0
  *
  * @date           12.03.14
@@ -20,7 +20,7 @@ namespace IPub\StepForm\Storage;
  * Session storage factory
  *
  * @package        iPublikuj:StepForm!
- * @subpackage     Components
+ * @subpackage     Storage
  *
  * @author         Adam Kadlec <adam.kadlec@ipublikuj.eu>
  */

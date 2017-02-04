@@ -6,10 +6,10 @@
  * @license        http://www.ipublikuj.eu
  * @author         Adam Kadlec http://www.ipublikuj.eu
  * @package        iPublikuj:StepForm!
- * @subpackage     Components
+ * @subpackage     Forms
  * @since          1.0.0
  *
- * @date           12.03.14
+ * @date           04.02.17
  */
 
 declare(strict_types = 1);
@@ -23,6 +23,14 @@ use IPub;
 use IPub\StepForm;
 use IPub\StepForm\Components;
 
+/**
+ * Accessor helpers trait
+ *
+ * @package        iPublikuj:StepForm!
+ * @subpackage     Forms
+ *
+ * @author         Adam Kadlec <adam.kadlec@ipublikuj.eu>
+ */
 trait TStepForm
 {
 	/**

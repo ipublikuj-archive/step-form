@@ -26,7 +26,6 @@ use Nette\Utils;
 use IPub;
 use IPub\StepForm\Exceptions;
 use IPub\StepForm\Storage;
-use Tracy\Debugger;
 
 /**
  * Step form control container definition
@@ -93,6 +92,11 @@ class Control extends Application\UI\Control
 	 * @var string[]
 	 */
 	private $menu = [];
+
+	/**
+	 * @var callable[]
+	 */
+	private $formCallbacks = [];
 
 	/**
 	 * @var bool
@@ -213,40 +217,34 @@ class Control extends Application\UI\Control
 
 	/**
 	 * @param string $name
-	 * @param Forms\Form $form
+	 * @param Forms\Form|callable $form
 	 *
 	 * @return void
 	 *
 	 * @throws Exceptions\InvalidArgumentException
 	 */
-	public function addForm(string $name, Forms\Form $form)
+	public function addForm(string $name, $form)
 	{
-		if ($form->getElementPrototype()->getAttribute('enctype') !== NULL) {
+		if (!($form instanceof Forms\Form) && !is_callable($form)) {
+			$formType = is_object($form) ? get_class($form) : gettype($form);
+
+			throw new Exceptions\InvalidArgumentException(sprintf('Expected instance of Nette\Application\UI\Form, %s passed instead', $formType));
+		}
+
+		if ($form instanceof Forms\Form && $form->getElementPrototype()->getAttribute('enctype') !== NULL) {
 			throw new Exceptions\InvalidArgumentException('StepForm cannot handle forms with file upload!');
 		}
 
 		$counter = $this->getTotalSteps() + 1;
 
-		$this->addComponent($form, 'step_' . $counter);
+		if ($form instanceof Forms\Form) {
+			$this->addComponent($form, 'step_' . $counter);
 
-		$form->onValidate[] = [$this, 'triggerValidate'];
-		$form->onSubmit[] = [$this, 'triggerSubmit'];
-		$form->onSuccess[] = [$this, 'triggerSuccess'];
-		$form->onError[] = [$this, 'triggerError'];
+		} else {
+			$this->formCallbacks[$counter] = $form;
+		}
 
 		$this->menu[$counter] = $name;
-
-		$values = $this->getValues($counter);
-
-		if ($values instanceof Utils\ArrayHash) {
-			if ($values->_form !== $form->getName()) {
-				throw new Exceptions\InvalidArgumentException('Existing results do not match the given form!');
-			}
-
-			if ($this->fillWithDefaults) {
-				$form->setDefaults($values);
-			}
-		}
 	}
 
 	/**
@@ -264,7 +262,38 @@ class Control extends Application\UI\Control
 
 		$this->validateStep($step);
 
-		return $this->getComponent('step_' . $step);
+		if (!$form = $this->getComponent('step_' . $step, FALSE)) {
+			if (isset($this->formCallbacks[$step]) && is_callable($this->formCallbacks[$step])) {
+				$form = call_user_func($this->formCallbacks[$step]);
+			}
+
+			if (!$form instanceof Forms\Form) {
+				$formType = is_object($form) ? get_class($form) : gettype($form);
+
+				throw new Exceptions\InvalidArgumentException(sprintf('[STEP %s] Returned value of factory is not instance of Nette\Application\UI\Form, %s passed instead.', $step, $formType));
+			}
+
+			$this->addComponent($form, 'step_' . $step);
+		}
+
+		$form->onValidate[] = [$this, 'triggerValidate'];
+		$form->onSubmit[] = [$this, 'triggerSubmit'];
+		$form->onSuccess[] = [$this, 'triggerSuccess'];
+		$form->onError[] = [$this, 'triggerError'];
+
+		$formData = $this->storage->get($this->getSessionKey($step));
+
+		if ($formData instanceof Utils\ArrayHash) {
+			if ($formData->_form !== $form->getName()) {
+				throw new Exceptions\InvalidArgumentException('Existing results do not match the given form!');
+			}
+
+			if ($this->fillWithDefaults) {
+				$form->setDefaults($this->getValues($step));
+			}
+		}
+
+		return $form;
 	}
 
 	/**
@@ -449,19 +478,25 @@ class Control extends Application\UI\Control
 
 	/**
 	 * @param int|NULL $step
+	 * @param bool $asArray
 	 *
-	 * @return Utils\ArrayHash|NULL
+	 * @return Utils\ArrayHash|array|NULL
 	 *
 	 * @throws Exceptions\InvalidArgumentException
 	 */
-	public function getValues(int $step = NULL)
+	public function getValues(int $step = NULL, bool $asArray = FALSE)
 	{
 		$this->validateStep($step);
 
 		$key = $this->getSessionKey($step);
 
 		if (($values = $this->storage->get($key, FALSE)) && $values instanceof Utils\ArrayHash) {
-			return $values->values;
+			if ($asArray) {
+				return (array) $values->values;
+
+			} else {
+				return Utils\ArrayHash::from($values->values);
+			}
 		}
 
 		return NULL;

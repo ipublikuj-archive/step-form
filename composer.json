@@ -1,0 +1,65 @@
+{
+	"name"			: "ipub/step-form",
+	"type"			: "library",
+	"description"	: "Extension for creating step forms or useful form wizards for Nette Framework",
+	"keywords"		: ["nette", "step form", "form wizard", "wizard", "ipub", "ipublikuj", "framework", "tools"],
+	"homepage"		: "https://github.com/iPublikuj/step-form",
+	"license"		: ["GPL-2.0", "GPL-3.0"],
+
+	"authors": [
+		{
+			"name"		: "iPublikuj:cms",
+			"email"		: "info@ipublikuj.eu",
+			"homepage"	: "http://www.ipublikuj.eu/"
+		}
+	],
+
+	"support":{
+		"email"		:"support@ipublikuj.eu",
+		"issues"	:"https://github.com/iPublikuj/step-form/issues"
+	},
+
+	"extra": {
+		"ipub"	: {
+			"configuration" : {
+				"extensions" : {
+					"confirmationDialog" : "IPub\\StepForm\\DI\\StepFormExtension"
+				}
+			}
+		}
+	},
+
+	"require": {
+		"php"	: ">=7.0.0",
+
+		"nette/application"	: "~2.3",
+		"nette/di"			: "~2.3",
+		"nette/forms"		: "~2.3",
+		"nette/http"		: "~2.3",
+		"nette/utils"		: "~2.3",
+
+		"latte/latte"	: "~2.3",
+
+		"pds/skeleton"	: "@dev"
+	},
+
+	"require-dev": {
+		"nette/bootstrap"		: "~2.3",
+		"nette/mail"			: "~2.3",
+		"nette/robot-loader"	: "~2.3",
+		"nette/safe-stream"		: "~2.3",
+		"nette/tester"			: "@dev",
+
+		"tracy/tracy"	: "@dev"
+	},
+
+	"suggest": {
+		"kdyby/translation"	: "If you wanna use translations in template and messages."
+	},
+
+	"autoload": {
+		"psr-0": {
+			"IPub\\StepForm\\": "src/"
+		}
+	}
+}

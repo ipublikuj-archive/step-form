@@ -1,0 +1,10 @@
+{if count($menu)}
+	<ul n:snippet="stepNavi" class="ipub-steps-form ipub-steps-form-navi">
+		<li n:foreach="$menu as $key => $name" n:class="ipub-steps-form-navi-item, $key === $step ? active">
+			<a n:href="changeStep! step => $key" class="ajax">{$key} - {$name}</a>
+		</li>
+	</ul>
+	<div n:snippet="activeStep">
+		{control $currentForm}
+	</div>
+{/if}

@@ -143,9 +143,9 @@ class Control extends Application\UI\Control
 		string $templateFile = NULL,
 		Storage\StorageFactory $storageFactory
 	) {
-		list(, , , $parent, $cname) = func_get_args() + [NULL, NULL, NULL, NULL, NULL];
+		list(, , , $parent, $name) = func_get_args() + [NULL, NULL, NULL, NULL, NULL];
 
-		parent::__construct($parent, $cname);
+		parent::__construct($parent, $name);
 
 		$this->storage = $storageFactory->create($formName);
 
@@ -242,6 +242,8 @@ class Control extends Application\UI\Control
 		$counter = $this->getTotalSteps() + 1;
 
 		if ($form instanceof Forms\Form) {
+			$this->attachFormEvents($form);
+
 			$this->addComponent($form, 'step_' . $counter);
 
 		} else {
@@ -279,24 +281,7 @@ class Control extends Application\UI\Control
 
 			$this->addComponent($form, 'step_' . $step);
 
-			$form->onValidate[] = [$this, 'triggerValidate'];
-			$form->onSubmit[] = [$this, 'triggerSubmit'];
-			$form->onSuccess[] = [$this, 'triggerSuccess'];
-			$form->onError[] = [$this, 'triggerError'];
-
-			$this->attachButtonsCallbacks($form);
-		}
-
-		$formData = $this->storage->get($this->getSessionKey($step));
-
-		if ($formData instanceof Utils\ArrayHash) {
-			if ($formData->_form !== $form->getName()) {
-				throw new Exceptions\InvalidArgumentException('Existing results do not match the given form!');
-			}
-
-			if ($this->fillWithDefaults) {
-				$form->setDefaults($this->getValues($step));
-			}
+			$this->attachFormEvents($form);
 		}
 
 		return $form;
@@ -539,14 +524,10 @@ class Control extends Application\UI\Control
 	 */
 	private function getFormStepNumber(Forms\Form $form)
 	{
-		$counter = 1;
-
 		foreach ($this->getComponents(FALSE, Forms\Form::class) as $component) {
 			if ($component === $form) {
-				return $counter;
+				return (int) substr($component->getName(), 5);
 			}
-
-			$counter++;
 		}
 
 		throw new Exceptions\InvalidStateException('This form has not been added!');
@@ -554,6 +535,38 @@ class Control extends Application\UI\Control
 
 	/**
 	 * @param Forms\Form $form
+	 *
+	 * @return void
+	 *
+	 * @throws Exceptions\InvalidArgumentException
+	 * @throws Exceptions\InvalidStateException
+	 */
+	private function attachFormEvents(Forms\Form $form)
+	{
+		$form->onValidate[] = [$this, 'triggerValidate'];
+		$form->onSubmit[] = [$this, 'triggerSubmit'];
+		$form->onSuccess[] = [$this, 'triggerSuccess'];
+		$form->onError[] = [$this, 'triggerError'];
+
+		$this->attachButtonsCallbacks($form);
+
+		$formData = $this->storage->get($this->getSessionKey($this->getFormStepNumber($form)), NULL);
+
+		if ($formData instanceof Utils\ArrayHash) {
+			if ($formData->_form !== $form->getName()) {
+				throw new Exceptions\InvalidArgumentException('Existing results do not match the given form!');
+			}
+
+			if ($this->fillWithDefaults) {
+				$form->setDefaults($this->getValues($this->getFormStepNumber($form)));
+			}
+		}
+	}
+
+	/**
+	 * @param Forms\Form $form
+	 *
+	 * @return void
 	 */
 	private function attachButtonsCallbacks(Forms\Form $form)
 	{

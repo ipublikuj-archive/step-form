@@ -420,8 +420,6 @@ class Control extends Application\UI\Control
 
 		} elseif ($submitName === self::BUTTON_FINISH_NAME && $form->isValid()) {
 			$this->handleSubmit($form);
-
-			$this->clearValues();
 		}
 	}
 
@@ -461,8 +459,10 @@ class Control extends Application\UI\Control
 		}
 
 		if ($currentStep === $this->getTotalSteps()) {
-			$form->onSubmit[] = function() {
+			$form->onSuccess[] = function() {
 				$this->onComplete($this);
+
+				$this->clearValues();
 			};
 		}
 	}

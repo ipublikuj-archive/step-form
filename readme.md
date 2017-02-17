@@ -21,7 +21,7 @@ After that you have to register extension in config.neon.
 
 ```neon
 extensions:
-	confirmationDialog: IPub\StepForm\DI\StepFormExtension
+	stepForm: IPub\StepForm\DI\StepFormExtension
 ```
 
 ## Documentation

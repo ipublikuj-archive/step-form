@@ -53,10 +53,6 @@
 		"tracy/tracy"	: "@dev"
 	},
 
-	"suggest": {
-		"kdyby/translation"	: "If you wanna use translations in template and messages."
-	},
-
 	"autoload": {
 		"psr-0": {
 			"IPub\\StepForm\\": "src/"
